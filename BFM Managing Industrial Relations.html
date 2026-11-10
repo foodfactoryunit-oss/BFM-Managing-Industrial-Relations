@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BFM in Action: The Industrial Harmony Challenge</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brandRed: '#D32F2F',
+                        brandRedDark: '#991B1B',
+                        electricCyan: '#00E5FF',
+                        brightYellow: '#FFD600',
+                        darkSlate: '#0F172A',
+                        cardBg: '#1E293B'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0F172A;
+            color: #F8FAFC;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism styling */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            border: 2px solid rgba(0, 229, 255, 0.2);
+        }
+
+        /* Neo-brutalist subtle shadows */
+        .neo-shadow {
+            box-shadow: 4px 4px 0px #000000;
+        }
+        .neo-shadow-cyan {
+            box-shadow: 4px 4px 0px #00E5FF;
+        }
+        .neo-shadow-red {
+            box-shadow: 4px 4px 0px #D32F2F;
+        }
+
+        /* Card Flip Animation */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .card-inner.flipped {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0F172A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00E5FF;
+        }
+
+        /* Pulse animations for meters */
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 1; filter: drop-shadow(0 0 5px rgba(0, 229, 255, 0.6)); }
+            50% { opacity: 0.8; filter: drop-shadow(0 0 15px rgba(0, 229, 255, 0.9)); }
+        }
+        .pulse-cyan {
+            animation: pulseGlow 2s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-electricCyan selection:text-darkSlate">
+
+    <!-- TOP HEADER / NAV BAR -->
+    <header class="w-full bg-slate-900/90 border-b border-slate-800 sticky top-0 z-50 backdrop-blur-md px-4 py-3">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <!-- Brand Logo SVG -->
+            <div class="flex items-center gap-3">
+                <svg class="h-10 w-auto" viewBox="0 0 300 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 60 C 20 20, 50 10, 90 10 C 120 10, 135 25, 150 25 C 165 25, 180 10, 210 10 C 250 10, 280 20, 280 60 C 290 85, 275 110, 260 115 L 40 115 C 25 110, 10 85, 20 60 Z" fill="#D32F2F"/>
+                    <rect x="40" y="115" width="220" height="35" rx="8" fill="#D32F2F"/>
+                    <text x="150" y="82" font-family="'Inter', sans-serif" font-weight="900" font-size="42" fill="#FFFFFF" text-anchor="middle">Mr. Bread</text>
+                    <line x1="60" y1="102" x2="240" y2="102" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+                <div class="hidden sm:block">
+                    <h1 class="text-xs font-black tracking-widest text-electricCyan uppercase">BFM Gamification</h1>
+                    <p class="text-xs text-slate-400 font-bold">Industrial Harmony Challenge</p>
+                </div>
+            </div>
+
+            <!-- Audio & Audio Controls -->
+            <div class="flex items-center gap-2">
+                <button id="bgmToggleBtn" onclick="toggleBGM()" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold transition text-slate-200">
+                    <span id="bgmIcon">🔇</span>
+                    <span id="bgmText">BGM Off</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-grow flex items-center justify-center p-4 my-2">
+        <div class="w-full max-w-4xl">
+
+            <!-- SCREEN 1: THE GATEWAY & HOOK -->
+            <section id="screenGateway" class="glass-panel rounded-3xl p-6 sm:p-10 neo-shadow-cyan transition-all duration-500">
+                <div class="text-center max-w-2xl mx-auto space-y-6">
+                    <!-- Badge Hook -->
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-electricCyan/10 border border-electricCyan/30 text-electricCyan text-xs font-bold uppercase tracking-wider">
+                        ⚡ Challenger Ready? Level Up Your Leadership!
+                    </div>
+
+                    <h1 class="text-3xl sm:text-5xl font-black text-white leading-tight">
+                        Mengapa BFM Harus Jago <span class="text-transparent bg-clip-text bg-gradient-to-r from-electricCyan to-brightYellow">Hubungan Industrial?</span>
+                    </h1>
+
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed text-left sm:text-center">
+                        Sebagai <b>Branch Factory Manager (BFM)</b> di pabrik Mr. Bread, 80% keberhasilan operasional tidak hanya ditentukan oleh mesin cetak adonan, melainkan oleh <span class="text-brightYellow font-bold">keharmonisan tim dan ketepatan respons Anda</span> terhadap isu ketenagakerjaan di lapangan!
+                    </p>
+
+                    <!-- Input Nama Card -->
+                    <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 text-left space-y-3">
+                        <label for="playerName" class="block text-xs font-bold text-electricCyan uppercase tracking-wider">Masukkan Nama / NIK BFM Anda:</label>
+                        <input type="text" id="playerName" placeholder="Contoh: BFM Ahmad - Pabrik Chiclin" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-electricCyan focus:ring-1 focus:ring-electricCyan font-semibold text-sm transition">
+                        <p id="nameError" class="text-brandRed text-xs font-bold hidden">⚠️ Silakan masukkan nama Anda untuk memulai misi!</p>
+                    </div>
+
+                    <button onclick="submitName()" class="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-brandRed to-red-600 hover:from-red-600 hover:to-brandRed text-white font-black text-lg rounded-2xl neo-shadow transition transform active:scale-95 flex items-center justify-center gap-3 mx-auto">
+                        <span>🚀 TERIMA MISI BFM</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- SCREEN 2: MISSION BRIEFING -->
+            <section id="screenBriefing" class="hidden glass-panel rounded-3xl p-6 sm:p-10 neo-shadow-cyan transition-all duration-500">
+                <div class="space-y-6">
+                    <div class="border-b border-slate-800 pb-4">
+                        <span class="text-xs font-black text-brightYellow uppercase tracking-widest">Confidential Briefing</span>
+                        <h2 class="text-2xl sm:text-4xl font-black text-white">Misi & Peraturan Permainan</h2>
+                    </div>
+
+                    <!-- Mission Cards Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="bg-slate-900/70 p-4 rounded-2xl border border-slate-800 space-y-2">
+                            <div class="text-electricCyan font-black text-lg">🎯 Target Utamamu</div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Selesaikan 10 kasus simulasi *Dialog Card* lapangan. Pertahankan keseimbangan antara <b class="text-electricCyan">Relationship Meter</b> (Harmoni Tim) dan <b class="text-brightYellow">Operational Meter</b> (Produktivitas Pabrik).
+                            </p>
+                        </div>
+
+                        <div class="bg-slate-900/70 p-4 rounded-2xl border border-slate-800 space-y-2">
+                            <div class="text-brightYellow font-black text-lg">⭐ Point System & Badges</div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Dapatkan +100 poin per jawaban tepat + Bonus Combo Multiplier! Buka 3 Badges Spesialisasi: <span class="text-slate-200 font-bold">IR Novice, Conflict Prevention Pro,</span> & <span class="text-slate-200 font-bold">Industrial Harmony Master</span>.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Teaser Level -->
+                    <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 space-y-3">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Struktur 10 Level Tantangan:</h3>
+                        <div class="flex flex-wrap gap-2 text-xs font-bold">
+                            <span class="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-lg">Level Easy (Soal 1-4): IR Fundamentals</span>
+                            <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded-lg">Level Medium (Soal 5-7): Communication & CLEAR Framework</span>
+                            <span class="px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg">Level Hard (Soal 8-10): Difficult Conversation & Escalation Tree</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-800">
+                        <div class="text-xs text-slate-400">
+                            Pemain: <span id="briefingPlayerName" class="text-electricCyan font-bold"></span>
+                        </div>
+                        <button onclick="startGame()" class="w-full sm:w-auto px-8 py-3.5 bg-electricCyan text-darkSlate hover:bg-cyan-300 font-black text-base rounded-xl neo-shadow transition transform active:scale-95 flex items-center justify-center gap-2">
+                            <span>🎮 SIAP MULAI (START GAME)</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SCREEN 3: CORE GAMEPLAY (DIALOG CARDS) -->
+            <section id="screenGameplay" class="hidden space-y-4">
+
+                <!-- STATUS DASHBOARD TOP BAR -->
+                <div class="glass-panel p-4 rounded-2xl grid grid-cols-2 sm:grid-cols-4 gap-3 items-center text-xs">
+                    <!-- Progress Bar -->
+                    <div class="col-span-2 sm:col-span-1 space-y-1">
+                        <div class="flex justify-between font-bold">
+                            <span class="text-slate-400">PROGRESS</span>
+                            <span id="progressPercent" class="text-electricCyan">10%</span>
+                        </div>
+                        <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="progressBar" class="h-full bg-gradient-to-r from-electricCyan to-brightYellow transition-all duration-300" style="width: 10%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Relationship Meter -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between font-bold">
+                            <span class="text-slate-400">HARMONY METER</span>
+                            <span id="relMeterText" class="text-green-400">80%</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="relMeterBar" class="h-full bg-green-500 transition-all duration-300" style="width: 80%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Operational Meter -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between font-bold">
+                            <span class="text-slate-400">OPS STABILITY</span>
+                            <span id="opsMeterText" class="text-brightYellow">85%</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="opsMeterBar" class="h-full bg-brightYellow transition-all duration-300" style="width: 85%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Score Box -->
+                    <div class="flex items-center justify-between sm:justify-end gap-3 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800">
+                        <span class="text-slate-400 font-bold">SCORE</span>
+                        <span id="scoreText" class="text-base font-black text-brightYellow">0</span>
+                    </div>
+                </div>
+
+                <!-- CARD SCENARIO AREA -->
+                <div class="perspective-1000 w-full min-h-[440px]">
+                    <div id="cardInner" class="card-inner relative w-full h-full min-h-[440px]">
+
+                        <!-- FRONT CARD (SCENARIO & OPTIONS) -->
+                        <div class="card-front absolute inset-0 glass-panel rounded-3xl p-5 sm:p-8 flex flex-col justify-between border-2 border-slate-700">
+                            <div>
+                                <!-- Header Info Card -->
+                                <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-800">
+                                    <span id="levelBadge" class="px-3 py-1 rounded-full bg-slate-800 text-electricCyan text-xs font-extrabold uppercase border border-electricCyan/30">
+                                        LEVEL EASY • KASUS 1/10
+                                    </span>
+                                    <span id="scenarioCategory" class="text-xs text-slate-400 font-semibold">
+                                        Understanding Industrial Relations
+                                    </span>
+                                </div>
+
+                                <!-- Dialog Narrative Box -->
+                                <div class="bg-slate-900/90 p-4 rounded-2xl border-l-4 border-electricCyan mb-5">
+                                    <div class="text-xs text-electricCyan font-bold uppercase tracking-wider mb-1">💬 Situasi Lapangan Pabrik:</div>
+                                    <p id="scenarioQuestion" class="text-sm sm:text-base text-slate-100 font-medium leading-relaxed">
+                                        Loading scenario...
+                                    </p>
+                                </div>
+
+                                <!-- Hint Banner -->
+                                <div id="scenarioHint" class="text-xs text-brightYellow/90 bg-brightYellow/10 px-3 py-2 rounded-xl mb-4 flex items-center gap-2">
+                                    💡 <span><b>Hint:</b> Perhatikan prinsip dasar hubungan industrial di modul 6.</span>
+                                </div>
+                            </div>
+
+                            <!-- Options Container -->
+                            <div id="optionsContainer" class="space-y-2.5 my-2">
+                                <!-- Options dynamically generated -->
+                            </div>
+                        </div>
+
+                        <!-- BACK CARD (FEEDBACK & DEBRIEF PER QUESTION) -->
+                        <div class="card-back absolute inset-0 glass-panel rounded-3xl p-5 sm:p-8 flex flex-col justify-between border-2 border-slate-700">
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                                    <span id="feedbackResultBadge" class="px-3 py-1 rounded-full text-xs font-black uppercase">
+                                        BENAR! +100 PTS
+                                    </span>
+                                    <span class="text-xs text-slate-400 font-bold">Umpan Balik Instruktusional</span>
+                                </div>
+
+                                <div id="feedbackTitle" class="text-lg font-black text-white">
+                                    Analisis Keputusan BFM
+                                </div>
+
+                                <div class="bg-slate-900/90 p-4 rounded-2xl border border-slate-800 text-xs sm:text-sm leading-relaxed text-slate-200 space-y-2">
+                                    <p id="feedbackText">Penjelasan detail materi...</p>
+                                </div>
+                            </div>
+
+                            <button onclick="nextQuestion()" class="w-full py-3.5 bg-electricCyan text-darkSlate hover:bg-cyan-300 font-black text-sm rounded-xl neo-shadow transition transform active:scale-95 flex items-center justify-center gap-2 mt-4">
+                                <span>LANJUTKAN MISI ➔</span>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- SCREEN 4: POST-ACTION RESULT SCREEN -->
+            <section id="screenResult" class="hidden glass-panel rounded-3xl p-6 sm:p-10 neo-shadow-cyan transition-all duration-500">
+                <div class="space-y-6">
+                    <div class="text-center space-y-2 border-b border-slate-800 pb-6">
+                        <div class="inline-block px-4 py-1 rounded-full bg-electricCyan/20 text-electricCyan font-black text-xs uppercase tracking-widest mb-2">
+                            Laporan Akhir Misi BFM
+                        </div>
+                        <h2 class="text-3xl sm:text-5xl font-black text-white">GAME RESULT</h2>
+                        <p id="resultPlayerGreeting" class="text-slate-400 text-sm">Selamat BFM Ahmad, Anda telah menyelesaikan seluruh tantangan!</p>
+                    </div>
+
+                    <!-- Score & Stats Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 text-center">
+                            <span class="text-xs text-slate-400 font-bold uppercase">Skor Akhir</span>
+                            <div id="finalScore" class="text-4xl font-black text-brightYellow my-1">1000</div>
+                            <span class="text-[10px] text-slate-500">Dari maksimum 1000 Pts</span>
+                        </div>
+
+                        <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 text-center">
+                            <span class="text-xs text-slate-400 font-bold uppercase">Akurasi Keputusan</span>
+                            <div id="finalAccuracy" class="text-4xl font-black text-electricCyan my-1">100%</div>
+                            <span id="finalAccuracySub" class="text-[10px] text-slate-500">10 / 10 Tepat</span>
+                        </div>
+
+                        <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 text-center">
+                            <span class="text-xs text-slate-400 font-bold uppercase">Status Evaluasi</span>
+                            <div id="finalStatusBadge" class="text-lg font-black text-green-400 my-2">HARMONY MASTER</div>
+                            <span class="text-[10px] text-slate-500">Level Evaluasi BFM</span>
+                        </div>
+                    </div>
+
+                    <!-- Positive Reinforcement Box -->
+                    <div id="reinforcementBox" class="p-5 rounded-2xl border leading-relaxed text-sm">
+                        <!-- Dynamic content -->
+                    </div>
+
+                    <!-- Badges Unlocked Section -->
+                    <div class="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h3 class="text-xs font-black text-electricCyan uppercase tracking-wider">Lencana Kompetensi Diraih (Badges Unlocked):</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="badgesContainer">
+                            <!-- Badges will render here -->
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="pt-4 border-t border-slate-800">
+                        <button onclick="restartGame()" class="w-full py-3.5 bg-electricCyan hover:bg-cyan-300 text-darkSlate font-black text-sm rounded-xl neo-shadow transition flex items-center justify-center gap-2">
+                            🔄 MAIN LAGI (RETRY)
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full bg-slate-950 border-t border-slate-900 py-4 px-4 text-center">
+        <p class="text-xs text-slate-500 font-medium">
+            Education & Training Dept. © 2026 • Mr. Bread (Indomaret Group)
+        </p>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        /* ==========================================================================
+           1. WEB AUDIO API SYSTEM (LIGHTWEIGHT BGM & SFX ENGINE FOR MOBILE & GEN-Z)
+           ========================================================================== */
+        let audioCtx = null;
+        let isMuted = true;
+        let bgmOsc = null;
+        let bgmGain = null;
+        let bgmInterval = null;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Lightweight Synth SFX Generator
+        function playSFX(type) {
+            initAudioContext();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'flip') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(250, now);
+                osc.frequency.exponentialRampToValueAtTime(500, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'correct') {
+                // Happy Chime (Arpeggio)
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                notes.forEach((freq, idx) => {
+                    const noteOsc = audioCtx.createOscillator();
+                    const noteGain = audioCtx.createGain();
+                    noteOsc.type = 'sine';
+                    noteOsc.frequency.setValueAtTime(freq, now + idx * 0.06);
+                    noteGain.gain.setValueAtTime(0.25, now + idx * 0.06);
+                    noteGain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.15);
+                    noteOsc.connect(noteGain);
+                    noteGain.connect(audioCtx.destination);
+                    noteOsc.start(now + idx * 0.06);
+                    noteOsc.stop(now + idx * 0.06 + 0.15);
+                });
+            } else if (type === 'wrong') {
+                // Low Buzz Error
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'fanfare') {
+                const notes = [440, 554.37, 659.25, 880]; // A major fan fare
+                notes.forEach((freq, idx) => {
+                    const noteOsc = audioCtx.createOscillator();
+                    const noteGain = audioCtx.createGain();
+                    noteOsc.type = 'triangle';
+                    noteOsc.frequency.setValueAtTime(freq, now + idx * 0.1);
+                    noteGain.gain.setValueAtTime(0.3, now + idx * 0.1);
+                    noteGain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.1 + 0.3);
+                    noteOsc.connect(noteGain);
+                    noteGain.connect(audioCtx.destination);
+                    noteOsc.start(now + idx * 0.1);
+                    noteOsc.stop(now + idx * 0.1 + 0.3);
+                });
+            }
+        }
+
+        // BGM Sequencer Loop
+        function startBGMLoop() {
+            if (bgmInterval) clearInterval(bgmInterval);
+
+            const bgmNotes = [220, 261.63, 293.66, 329.63, 261.63, 220, 196, 220]; // Ambient synth bass loop
+            let step = 0;
+
+            bgmInterval = setInterval(() => {
+                if (isMuted || !audioCtx) return;
+                try {
+                    const now = audioCtx.currentTime;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(bgmNotes[step % bgmNotes.length], now);
+                    gain.gain.setValueAtTime(0.03, now); // Gentle background volume
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                    step++;
+                } catch (e) {
+                    console.log("Audio play error", e);
+                }
+            }, 400);
+        }
+
+        function toggleBGM() {
+            initAudioContext();
+            isMuted = !isMuted;
+            const btnText = document.getElementById('bgmText');
+            const btnIcon = document.getElementById('bgmIcon');
+            const btn = document.getElementById('bgmToggleBtn');
+
+            if (!isMuted) {
+                btnIcon.innerText = "🔊";
+                btnText.innerText = "BGM On";
+                btn.classList.add('border-electricCyan', 'text-electricCyan');
+                startBGMLoop();
+                playSFX('click');
+            } else {
+                btnIcon.innerText = "🔇";
+                btnText.innerText = "BGM Off";
+                btn.classList.remove('border-electricCyan', 'text-electricCyan');
+                if (bgmInterval) clearInterval(bgmInterval);
+            }
+        }
+
+        // Unlock AudioContext automatically on touch for mobile devices
+        document.addEventListener('touchstart', function unlockAudio() {
+            initAudioContext();
+            document.removeEventListener('touchstart', unlockAudio);
+        }, { once: true });
+
+        /* ==========================================================================
+           2. GAME DATA & QUESTION BANK (10 SOAL HUBUNGAN INDUSTRIAL BFM)
+           ========================================================================== */
+        const questions = [
+            // LEVEL EASY (Soal 1 - 4)
+            {
+                level: "LEVEL EASY • SOAL 1/10",
+                category: "1. Understanding Industrial Relations",
+                question: "Di pabrik Mr. Bread, sedang terjadi diskusi mengenai jam istirahat shift 2. Siapa sajakah TIGA PIHAK utama yang membentuk sistem Hubungan Industrial sesuai regulasi dan peran BFM?",
+                hint: "Hubungan industrial mengatur 3 pilar utama dalam proses produksi.",
+                options: [
+                    { text: "A. Pengusaha, Pekerja/Buruh, dan Pemerintah", correct: true },
+                    { text: "B. BFM, HR Manager, dan Supplier Terigu", correct: false },
+                    { text: "C. Serikat Pekerja, Konsultan Hukum, dan Konsumen Indomaret", correct: false }
+                ],
+                feedbackTitle: "Konsep Tiga Pihak Hubungan Industrial",
+                feedbackText: "Tepat sekali! Tiga pihak utama dalam hubungan industrial adalah **Pengusaha** (menjalankan bisnis/operasional), **Pekerja/Buruh** (menjalankan pekerjaan & hak), dan **Pemerintah** (regulasi & pengawasan). BFM berada di posisi menjembatani ketiganya di lapangan."
+            },
+            {
+                level: "LEVEL EASY • SOAL 2/10",
+                category: "1. Understanding Industrial Relations",
+                question: "Seorang Leader beranggapan bahwa Hubungan Industrial baru penting jika sudah terjadi pemogokan atau konflik terbuka di pabrik. Apakah pandangan ini tepat?",
+                hint: "Apakah HI hanya urusan konflik?",
+                options: [
+                    { text: "A. Tepat, HI hanyalah mekanisme hukum untuk menyelesaikan bentrok/pemogokan.", correct: false },
+                    { text: "B. Tidak Tepat, HI adalah sistem hubungan sehari-hari mencakup hak, kewajiban, komunikasi, dan pencegahan perselisihan.", correct: true },
+                    { text: "C. Tepat, karena pengurusan karyawan sehari-hari fully tugas HR.", correct: false }
+                ],
+                feedbackTitle: "Filosofi Utama Hubungan Industrial",
+                feedbackText: "Jawaban Anda Benar! Hubungan industrial **bukan sekadar penanganan konflik**, melainkan sistem komunikasi dan kerja sama sehari-hari untuk menciptakan hubungan yang harmonis, produktif, dan berkelanjutan."
+            },
+            {
+                level: "LEVEL EASY • SOAL 3/10",
+                category: "2. Building Harmonious Work Relationship",
+                question: "Agar hubungan kerja di pabrik Mr. Bread tetap sehat, BFM harus memegang 4 Prinsip Dasar Hubungan Industrial. Manakah 4 prinsip tersebut?",
+                hint: "Singkatan dari F-C-R-C.",
+                options: [
+                    { text: "A. Fast, Cheap, Rigid, Control", correct: false },
+                    { text: "B. Fair, Clear, Respect, Consistent", correct: true },
+                    { text: "C. Friendly, Casual, Reactive, Compliant", correct: false }
+                ],
+                feedbackTitle: "4 Prinsip Hubungan Kerja Sehat",
+                feedbackText: "Luar Biasa! 4 Prinsip utama BFM: **Fair** (Adil & berbasis dasar objektif), **Clear** (Aturan jelas & dipahami), **Respect** (Menghargai peran), dan **Consistent** (Penerapan standar yang konsisten)."
+            },
+            {
+                level: "LEVEL EASY • SOAL 4/10",
+                category: "2. Building Harmonious Work Relationship",
+                question: "Saat terjadi riak kecil penolakan perubahan jam briefing shift di garis produksi, BFM menyatakan 'Ini urusan HR, saya hanya mengurusi target roti'. Bagaimana evaluasi peran BFM tersebut?",
+                hint: "Apakah BFM penjaga hubungan kerja garis depan?",
+                options: [
+                    { text: "A. Tepat, karena BFM fokus pada operasional dan HR bertanggung jawab penuh pada karyawan.", correct: false },
+                    { text: "B. Kurang Tepat, BFM adalah penanggung jawab hubungan kerja garis depan yang menjaga komunikasi langsung di lapangan.", correct: true },
+                    { text: "C. Kurang Tepat, BFM seharusnya bertindak sebagai hakim yang menjatuhkan hukuman disiplin.", correct: false }
+                ],
+                feedbackTitle: "Peran BFM di Garis Depan",
+                feedbackText: "Tepat! BFM adalah **wajah perusahaan di lapangan** dan garda depan hubungan kerja. Keputusan dan respon BFM sehari-hari langsung memengaruhi stabilitas operasional dan motivasi kerja."
+            },
+
+            // LEVEL MEDIUM (Soal 5 - 7)
+            {
+                level: "LEVEL MEDIUM • SOAL 5/10",
+                category: "3. Communication & Employee Relations",
+                question: "Pekerja mengeluh: 'Pak BFM, Leader X pilih kasih dalam membagikan rotasi lembur!'. Sebelum mengambil tindakan, BFM harus memisahkan mana FACT dan COMPLAINT/ASSUMPTION. Langkah apa yang paling tepat?",
+                hint: "Pisahkan apa yang dirasakan vs bukti objektif.",
+                options: [
+                    { text: "A. Langsung menegur Leader X karena keluhan pekerja pasti benar.", correct: false },
+                    { text: "B. Menganggap pekerja hanya bergosip dan mengabaikan laporan tersebut.", correct: false },
+                    { text: "C. Menggali fakta spesifik: melihat data catatan jadwal rotasi lembur 2 minggu terakhir dan meminta contoh kejadian nyata.", correct: true }
+                ],
+                feedbackTitle: "Fact vs Complaint vs Assumption",
+                feedbackText: "Sangat Tepat! Pernyataan 'Leader pilih kasih' adalah *Complaint/Assumption*. BFM wajib menggali **FACT** (siapa, kapan, bukti jadwal rotasi) sebelum menarik kesimpulan atau mengambil tindakan."
+            },
+            {
+                level: "LEVEL MEDIUM • SOAL 6/10",
+                category: "3. Communication & Employee Relations",
+                question: "BFM ingin menerapkan aturan baru kewajiban penggunaan masker & APD ketat di ruang pengadonan. Bagaimana alur penyampaian aturan yang paling efektif agar dipatuhi?",
+                hint: "Gunakan alur 5 Langkah: WHY -> WHAT -> HOW -> CONSEQUENCE -> CONFIRM.",
+                options: [
+                    { text: "A. Langsung pasang pengumuman sanksi potong gaji bagi yang tidak memakai APD.", correct: false },
+                    { text: "B. Jelaskan Alasan Keamanan Pangan (WHY) -> Aturan APD (WHAT) -> Cara Pakai (HOW) -> Konsekuensi (CONSEQUENCE) -> Cek Pemahaman (CONFIRM).", correct: true },
+                    { text: "C. Meminta Leader memarahi siapa saja yang melanggar di tempat.", correct: false }
+                ],
+                feedbackTitle: "Kerangka Mengomunikasikan Aturan",
+                feedbackText: "Hebat! Aturan lebih mudah dipatuhi jika pekerja memahami **WHY** (alasan bisnis/keamanan) dan **HOW**, bukan sekadar perintah dogmatis atau ancaman sanksi."
+            },
+            {
+                level: "LEVEL MEDIUM • SOAL 7/10",
+                category: "4. Preventing Industrial Conflict",
+                question: "Seorang teknisi mesin menyampaikan keluhan dengan nada emosional terkait fasilitas kerja. Langkah pertama BFM dalam kerangka mendengar concern pekerja adalah...",
+                hint: "Alur: LISTEN -> CLARIFY -> VERIFY -> RESPOND.",
+                options: [
+                    { text: "A. Menghentikan omongannya dan menyuruhnya tenang sebelum bicara.", correct: false },
+                    { text: "B. LISTEN: Dengarkan penuh tanpa menyela, lalu CLARIFY: Gali detail kejadian dan dampaknya.", correct: true },
+                    { text: "C. Langsung menjanjikan bahwa perusahaan akan mengganti mesin baru besok.", correct: false }
+                ],
+                feedbackTitle: "Mendengarkan Concern Pekerja",
+                feedbackText: "Benar! Mendengarkan (*Listen*) bukan berarti langsung menyetujui, melainkan memahami kondisi secara utuh sebelum melakukan verifikasi (*Verify*) dan memberi respons (*Respond*)."
+            },
+
+            // LEVEL HARD (Soal 8 - 10)
+            {
+                level: "LEVEL HARD • SOAL 8/10",
+                category: "3. Communication & Difficult Conversations",
+                question: "BFM harus melakukan 'Difficult Conversation' (Percakapan Sulit) dengan operator yang mengalami penurunan kedisiplinan keterlambatan berulang. Kerangka 7 langkah manakah yang benar?",
+                hint: "Dimulai dari Prepare hingga Follow Up.",
+                options: [
+                    { text: "A. Prepare -> Open -> Fact -> Listen -> Align -> Action -> Follow Up", correct: true },
+                    { text: "B. Warn -> Reprimand -> Threaten -> Suspend -> Report -> Escalate -> Close", correct: false },
+                    { text: "C. Talk -> Argue -> Blame -> Punish -> Sign -> Dismiss -> Forget", correct: false }
+                ],
+                feedbackTitle: "Kerangka 7 Langkah Difficult Conversation",
+                feedbackText: "Presisi Tinggi! Percakapan sulit yang sukses memerlukan persiapan fakta (**Prepare**), pembukaan maksud baik (**Open**), penyampaian fakta (**Fact**), mendengar (**Listen**), menyepakati langkah (**Align & Action**), serta pemantauan (**Follow Up**)."
+            },
+            {
+                level: "LEVEL HARD • SOAL 9/10",
+                category: "4. Preventing Industrial Conflict",
+                question: "Terjadi ketegangan pembagian shift antara 2 kelompok pekerja di area packing. BFM ingin menerapkan Kerangka CLEAR untuk mencegah konflik membesar. Apa kepanjangan dari CLEAR?",
+                hint: "Framework pencegahan konflik 5 langkah.",
+                options: [
+                    { text: "A. Control, Lead, Enforce, Act, Report", correct: false },
+                    { text: "B. Clarify, Listen, Evidence, Align, Resolve/Refer", correct: true },
+                    { text: "C. Change, Limit, Escalate, Avoid, Replace", correct: false }
+                ],
+                feedbackTitle: "Framework CLEAR Prevention",
+                feedbackText: "Mantap! **CLEAR** adalah alat BFM untuk cegah konflik: **Clarify** (Jelaskan masalah), **Listen** (Dengar perspektif), **Evidence** (Gunakan fakta), **Align** (Cari titik temu kepentingan), **Resolve/Refer** (Selesaikan atau eskalasi)."
+            },
+            {
+                level: "LEVEL HARD • SOAL 10/10",
+                category: "5. Managing Issues & Escalation",
+                question: "Pekerja menanyakan penafsiran hak ketenagakerjaan terkait pesangon & perubahan regulasi pemerintah yang berpotensi memicu perselisihan hukum. Berdasarkan Decision Tree BFM, tindakan apa yang harus diambil BFM?",
+                hint: "Kapan Handle sendiri vs Kapan Konsultasi/Eskalasi HR/IR?",
+                options: [
+                    { text: "A. Langsung ditangani sendiri dan BFM memberikan jawaban penafsiran hukum definitif.", correct: false },
+                    { text: "B. Mengabaikan pertanyaan pekerja agar tidak menimbulkan kekhawatiran.", correct: false },
+                    { text: "C. Mendengar, mencatat fakta/pertanyaan, lalu segera Berkoordinasi & Konsultasi/Eskalasi ke HR/IR.", correct: true }
+                ],
+                feedbackTitle: "Decision Tree: Handle vs Escalate",
+                feedbackText: "Sempurna! BFM tidak boleh menafsirkan aturan hukum/kebijakan hak secara definitif. Untuk isu hak, kebijakan, dan potensi perselisihan hukum, BFM wajib **Mencatat Fakta & Berkonsultasi/Eskalasi ke HR/IR**."
+            }
+        ];
+
+        /* ==========================================================================
+           3. GAME STATE & VARIABLES
+           ========================================================================== */
+        let playerName = "";
+        let currentQuestionIdx = 0;
+        let score = 0;
+        let comboMultiplier = 0;
+        let correctAnswersCount = 0;
+        let harmonyMeter = 80;
+        let opsMeter = 85;
+        let userAnswersHistory = [];
+
+        /* ==========================================================================
+           4. FLOW LOGIC & NAVIGATION
+           ========================================================================== */
+        function submitName() {
+            const input = document.getElementById('playerName');
+            const error = document.getElementById('nameError');
+            playSFX('click');
+
+            if (!input.value.trim()) {
+                error.classList.remove('hidden');
+                return;
+            }
+
+            error.classList.add('hidden');
+            playerName = input.value.trim();
+
+            document.getElementById('briefingPlayerName').innerText = playerName;
+            document.getElementById('screenGateway').classList.add('hidden');
+            document.getElementById('screenBriefing').classList.remove('hidden');
+        }
+
+        function startGame() {
+            playSFX('click');
+            document.getElementById('screenBriefing').classList.add('hidden');
+            document.getElementById('screenGameplay').classList.remove('hidden');
+
+            // Reset Game State
+            currentQuestionIdx = 0;
+            score = 0;
+            comboMultiplier = 0;
+            correctAnswersCount = 0;
+            harmonyMeter = 80;
+            opsMeter = 85;
+            userAnswersHistory = [];
+
+            updateDashboardUI();
+            renderQuestion();
+        }
+
+        function updateDashboardUI() {
+            // Update Progress
+            const progress = Math.round(((currentQuestionIdx) / questions.length) * 100);
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('progressPercent').innerText = `${progress}%`;
+
+            // Update Meters
+            document.getElementById('relMeterBar').style.width = `${harmonyMeter}%`;
+            document.getElementById('relMeterText').innerText = `${harmonyMeter}%`;
+            document.getElementById('opsMeterBar').style.width = `${opsMeter}%`;
+            document.getElementById('opsMeterText').innerText = `${opsMeter}%`;
+
+            // Update Score
+            document.getElementById('scoreText').innerText = score;
+        }
+
+        function renderQuestion() {
+            const q = questions[currentQuestionIdx];
+            const cardInner = document.getElementById('cardInner');
+            cardInner.classList.remove('flipped');
+
+            // Populate Front Card
+            document.getElementById('levelBadge').innerText = q.level;
+            document.getElementById('scenarioCategory').innerText = q.category;
+            document.getElementById('scenarioQuestion').innerText = q.question;
+            document.getElementById('scenarioHint').innerHTML = `💡 <span><b>Hint:</b> ${q.hint}</span>`;
+
+            // Render Options
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3.5 sm:p-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-electricCyan text-xs sm:text-sm text-slate-200 font-medium transition duration-200 flex items-start gap-3 transform active:scale-[0.99]";
+                btn.onclick = () => handleAnswer(idx);
+                btn.innerHTML = `<span class="font-bold text-electricCyan shrink-0">${opt.text.substring(0,2)}</span> <span>${opt.text.substring(3)}</span>`;
+                container.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(optionIdx) {
+            const q = questions[currentQuestionIdx];
+            const selectedOpt = q.options[optionIdx];
+            const isCorrect = selectedOpt.correct;
+
+            // Flip Card SFX
+            playSFX('flip');
+
+            // Record History
+            userAnswersHistory.push({
+                questionNum: currentQuestionIdx + 1,
+                questionText: q.question,
+                selectedText: selectedOpt.text,
+                isCorrect: isCorrect,
+                feedbackTitle: q.feedbackTitle
+            });
+
+            if (isCorrect) {
+                playSFX('correct');
+                correctAnswersCount++;
+                comboMultiplier++;
+                const addedScore = 100 + ((comboMultiplier - 1) * 20);
+                score += addedScore;
+
+                harmonyMeter = Math.min(100, harmonyMeter + 5);
+                opsMeter = Math.min(100, opsMeter + 5);
+
+                // Setup Back Card (Correct)
+                document.getElementById('feedbackResultBadge').className = "px-3 py-1 rounded-full text-xs font-black uppercase bg-green-500/20 text-green-400 border border-green-500/40";
+                document.getElementById('feedbackResultBadge').innerText = `✓ TEPAAT! +${addedScore} PTS (Combo x${comboMultiplier})`;
+            } else {
+                playSFX('wrong');
+                comboMultiplier = 0;
+                harmonyMeter = Math.max(20, harmonyMeter - 10);
+                opsMeter = Math.max(20, opsMeter - 10);
+
+                // Setup Back Card (Wrong)
+                document.getElementById('feedbackResultBadge').className = "px-3 py-1 rounded-full text-xs font-black uppercase bg-brandRed/20 text-brandRed text-xs border border-brandRed/40";
+                document.getElementById('feedbackResultBadge').innerText = "✕ KURANG TEPAT";
+            }
+
+            // Update Back Card Details
+            document.getElementById('feedbackTitle').innerText = q.feedbackTitle;
+            document.getElementById('feedbackText').innerHTML = q.feedbackText;
+
+            updateDashboardUI();
+
+            // Trigger Flip Animation
+            document.getElementById('cardInner').classList.add('flipped');
+        }
+
+        function nextQuestion() {
+            playSFX('click');
+            currentQuestionIdx++;
+
+            if (currentQuestionIdx < questions.length) {
+                updateDashboardUI();
+                renderQuestion();
+            } else {
+                finishGame();
+            }
+        }
+
+        /* ==========================================================================
+           5. POST-ACTION DEBRIEF & RESULT SCREEN
+           ========================================================================== */
+        function finishGame() {
+            playSFX('fanfare');
+
+            document.getElementById('screenGameplay').classList.add('hidden');
+            document.getElementById('screenResult').classList.remove('hidden');
+
+            // Set final stats
+            document.getElementById('resultPlayerGreeting').innerText = `Selamat BFM ${playerName}, Anda telah menyelesaikan seluruh tantangan simulasi!`;
+            document.getElementById('finalScore').innerText = score;
+
+            const accuracy = Math.round((correctAnswersCount / questions.length) * 100);
+            document.getElementById('finalAccuracy').innerText = `${accuracy}%`;
+            document.getElementById('finalAccuracySub').innerText = `${correctAnswersCount} / ${questions.length} Kasus Tepat`;
+
+            // Status Badge & Positive Reinforcement
+            const statusBadge = document.getElementById('finalStatusBadge');
+            const reinforceBox = document.getElementById('reinforcementBox');
+
+            if (accuracy >= 80) {
+                statusBadge.innerText = "INDUSTRIAL HARMONY MASTER";
+                statusBadge.className = "text-lg font-black text-green-400 my-2";
+                reinforceBox.className = "p-5 rounded-2xl border bg-green-950/40 border-green-500/30 text-green-200";
+                reinforceBox.innerHTML = `
+                    <div class="font-bold text-base mb-1">🌟 Performa Luar Biasa!</div>
+                    <p class="text-xs sm:text-sm">Anda menunjukkan pemahaman yang sangat kuat sebagai <b>BFM</b>. Komunikasi objektif, kepatuhan batas kewenangan BFM-HR, serta penerapan prinsip FAIR & CLEAR Anda akan menjaga pabrik Mr. Bread tetap produktif dan kondusif!</p>
+                `;
+            } else if (accuracy >= 60) {
+                statusBadge.innerText = "PROMPTING BFM";
+                statusBadge.className = "text-lg font-black text-brightYellow my-2";
+                reinforceBox.className = "p-5 rounded-2xl border bg-yellow-950/40 border-brightYellow/30 text-yellow-200";
+                reinforceBox.innerHTML = `
+                    <div class="font-bold text-base mb-1">👍 Kerja Bagus!</div>
+                    <p class="text-xs sm:text-sm">Anda sudah menguasai sebagian besar dasar hubungan industrial. Tingkatkan lagi kecermatan dalam memisahkan <i>Fact vs Assumption</i> dan terapkan kerangka <b>CLEAR</b> saat terjadi potensi gesekan di lapangan.</p>
+                `;
+            } else {
+                statusBadge.innerText = "NEEDS CONCEPT REVIEW";
+                statusBadge.className = "text-lg font-black text-brandRed my-2";
+                reinforceBox.className = "p-5 rounded-2xl border bg-red-950/40 border-brandRed/30 text-red-200";
+                reinforceBox.innerHTML = `
+                    <div class="font-bold text-base mb-1">💪 Tetap Semangat, BFM!</div>
+                    <p class="text-xs sm:text-sm">Mengelola manusia dan hubungan kerja memang butuh latihan berkesinambungan. Pelajari kembali materi Hubungan Industrial, terutama bagian Decision Tree Escalation dan 7 Langkah Percakapan Sulit, lalu coba simulasi ini kembali!</p>
+                `;
+            }
+
+            // Unlock Badges logic
+            const badgesContainer = document.getElementById('badgesContainer');
+            badgesContainer.innerHTML = '';
+
+            const badgesList = [
+                { name: "IR Novice", desc: "Menyelesaikan Level Easy (Basic HI)", unlocked: correctAnswersCount >= 3 },
+                { name: "Conflict Prevention Pro", desc: "Kuasai Framework CLEAR & Fact Check", unlocked: correctAnswersCount >= 6 },
+                { name: "Industrial Harmony Master", desc: "Kuasai Difficult Conversation & Escalation", unlocked: correctAnswersCount >= 9 }
+            ];
+
+            badgesList.forEach(b => {
+                const bDiv = document.createElement('div');
+                if (b.unlocked) {
+                    bDiv.className = "p-3 rounded-xl bg-slate-800 border border-electricCyan text-center space-y-1";
+                    bDiv.innerHTML = `
+                        <div class="text-xl">🏆</div>
+                        <div class="text-xs font-black text-electricCyan">${b.name}</div>
+                        <div class="text-[10px] text-slate-400">${b.desc}</div>
+                    `;
+                } else {
+                    bDiv.className = "p-3 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-1 opacity-50";
+                    bDiv.innerHTML = `
+                        <div class="text-xl">🔒</div>
+                        <div class="text-xs font-bold text-slate-500">${b.name}</div>
+                        <div class="text-[10px] text-slate-600">Terkunci (Butuh Akurasi Tinggi)</div>
+                    `;
+                }
+                badgesContainer.appendChild(bDiv);
+            });
+        }
+
+        function restartGame() {
+            playSFX('click');
+            document.getElementById('screenResult').classList.add('hidden');
+            document.getElementById('screenBriefing').classList.remove('hidden');
+        }
+
+        // Window Load Initialization
+        window.onload = function() {
+            console.log("BFM Gamification Challenge Ready.");
+        };
+    </script>
+</body>
+</html>
